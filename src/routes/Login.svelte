@@ -4,13 +4,12 @@
 
     const auth = firebase.auth();
 
-    function login() {
-        let email = event.target.email.value;
-        let password = event.target.password.value;
+    let email;
+    let password;
 
+    function login() {
         auth.signInWithEmailAndPassword(email, password)
             .then(userToken => {
-                console.log(userToken);
                 navigate('/', true);
             })
             .catch(error => {
@@ -20,7 +19,7 @@
 </script>
 
 <form on:submit|preventDefault="{login}">
-    <input name="email" type="email" />
-    <input name="password" type="password" />
+    <input type="email" bind:value="{email}" />
+    <input type="password" bind:value="{password}" />
     <input type="submit" value="Login" />
 </form>

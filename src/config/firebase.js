@@ -1,6 +1,8 @@
+import { readable } from 'svelte/store';
+
 import firebase from 'firebase/app';
-import 'firebase/database';
 import 'firebase/auth';
+import 'firebase/database';
 
 const firebaseConfig = {
     apiKey: "AIzaSyD4grqXtT-gZP4LSGhojNbX9NTGJeiyaAc",
@@ -12,6 +14,30 @@ const firebaseConfig = {
     appId: "1:29169615939:web:3f39900c4844781f6680f6",
     measurementId: "G-WDS21562M8"
 };
-firebase.initialise = () => firebase.initializeApp(firebaseConfig);
+if (firebase.apps.length === 0) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+const auth = firebase.auth();
+
+export const authenticated = readable(undefined, function start(set) {
+	return auth.onAuthStateChanged(user => set(Boolean(user)));
+});
+
+let db = firebase.database();
+let remoteBuzzwords = db.ref('buzzwords');
+export const buzzwords = readable([], function start(set) {
+    let local = [];
+    return remoteBuzzwords.on('child_added', function(data) {
+        if (data) {
+            local.push(data.val());
+            set(local);
+        }
+    });
+});
+
+export function addBuzzword(buzzword) {
+    remoteBuzzwords.push(buzzword);
+}
 
 export default firebase;
