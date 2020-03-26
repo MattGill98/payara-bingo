@@ -24,6 +24,12 @@ export const authenticated = readable(undefined, function start(set) {
 	return auth.onAuthStateChanged(user => set(Boolean(user)));
 });
 
+export const profileConfigured = readable(undefined, function start(set) {
+	return auth.onIdTokenChanged(user => {
+        set(user && user.displayName);
+    });
+});
+
 let db = firebase.database();
 let remoteBuzzwords = db.ref('buzzwords');
 export const buzzwords = readable([], function start(set) {

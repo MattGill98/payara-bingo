@@ -3,15 +3,21 @@
 {:then authPromiseResult}
 	<Router>
 		{#if $authenticated}
-			<Link href="/">Grid</Link>
-			<Link href="/buzzwords">Buzzwords</Link>
-			<Link href="/results">Results</Link>
-			<a href="#logout" on:click|preventDefault="{logout}">Logout</a>
+			{#if $profileConfigured}
+				<p>Hello {username}</p>
+				<Link href="/">Grid</Link>
+				<Link href="/buzzwords">Buzzwords</Link>
+				<Link href="/results">Results</Link>
+				<a href="#logout" on:click|preventDefault="{logout}">Logout</a>
 
-			<Route path="/" component="{Grid}" />
-			<Route path="/buzzwords" component="{Buzzwords}" />
-			<Route path="/results" component="{Results}" />
-			<Route component="{Page404}" />
+				<Route path="/" component="{Grid}" />
+				<Route path="/buzzwords" component="{Buzzwords}" />
+				<Route path="/results" component="{Results}" />
+				<Route component="{Page404}" />
+			{:else}
+				<a href="#logout" on:click|preventDefault="{logout}">Logout</a>
+				<Route component="{UserInfo}" />
+			{/if}
 		{:else}
 			<Link href="/login">Login</Link>
 			<Link href="/register">Register</Link>
@@ -24,7 +30,7 @@
 {/await}
 
 <script>
-	import firebase, { authenticated } from './config/firebase';
+	import firebase, { authenticated, profileConfigured } from './config/firebase';
 
 	const auth = firebase.auth();
 
@@ -32,6 +38,10 @@
 	$: authPromise = $authenticated === undefined?
 			new Promise(() => {}) :
 			Promise.resolve($authenticated);
+
+	$: username = !Boolean($authenticated)?
+			undefined:
+			auth.currentUser.displayName;
 
 	// What to do on a logout
 	function logout() {
@@ -51,4 +61,5 @@
 	import Login from './routes/Login.svelte';
 	import Register from './routes/Register.svelte';
 	import Page404 from './routes/404.svelte';
+	import UserInfo from './routes/UserInfo.svelte';
 </script>
