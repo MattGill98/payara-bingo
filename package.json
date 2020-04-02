@@ -1,9 +1,9 @@
 {
   "name": "payara-bingo",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "scripts": {
     "build": "rollup -c",
-    "dev": "firebase serve",
+    "dev": "rollup -c -w",
     "start": "sirv public --single",
     "deploy": "rollup -c && firebase deploy"
   },
