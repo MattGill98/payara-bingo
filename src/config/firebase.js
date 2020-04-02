@@ -3,6 +3,7 @@ import { readable } from 'svelte/store';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/database';
+import 'firebase/functions';
 
 const firebaseConfig = {
     apiKey: "AIzaSyD4grqXtT-gZP4LSGhojNbX9NTGJeiyaAc",
@@ -24,9 +25,34 @@ export const authenticated = readable(undefined, function start(set) {
 	return auth.onAuthStateChanged(user => set(Boolean(user)));
 });
 
+export const authPromise = readable(new Promise(() => {}), function start(set) {
+	return auth.onAuthStateChanged(user => set(Promise.resolve(Boolean(user))));
+});
+
+export const username = readable(undefined, function start(set) {
+	return auth.onIdTokenChanged(user => {
+        if (!user) {
+            return set(null);
+        }
+        set(user.displayName);
+    });
+});
+
 export const profileConfigured = readable(undefined, function start(set) {
 	return auth.onIdTokenChanged(user => {
-        set(user && user.displayName);
+        set(Boolean(user && user.displayName));
+    });
+});
+
+export const isAdmin = readable(undefined, function start(set) {
+	return auth.onIdTokenChanged(user => {
+        if (user) {
+            user.getIdTokenResult().then(token => {
+                set(token.claims && token.claims.admin);
+            });
+        } else {
+            set(false);
+        }
     });
 });
 

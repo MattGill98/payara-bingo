@@ -9,10 +9,10 @@
     function submit() {
         user.updateProfile({
             displayName: displayname
-        }).then(userToken => {
-            user.getIdToken(true);
-            navigate('/', true);
-        }).catch(error => {
+        })
+        .then(userToken => user.getIdToken(true))
+        .then(() => navigate('/', true))
+        .catch(error => {
             console.error('Error setting display name: ' + error);
         });
     }

@@ -4,7 +4,11 @@
 	<Router>
 		{#if $authenticated}
 			{#if $profileConfigured}
-				<p>Hello {username}</p>
+				{#if $isAdmin}
+					<p>Hello {$username} (Admin)</p>
+				{:else}
+					<p>Hello {$username}</p>
+				{/if}
 				<Link href="/">Grid</Link>
 				<Link href="/buzzwords">Buzzwords</Link>
 				<Link href="/results">Results</Link>
@@ -30,18 +34,9 @@
 {/await}
 
 <script>
-	import firebase, { authenticated, profileConfigured } from './config/firebase';
+	import firebase, { authenticated, authPromise, username, profileConfigured, isAdmin } from './config/firebase';
 
 	const auth = firebase.auth();
-
-	// Get if the user is authenticated, and update this variable whenever it changes
-	$: authPromise = $authenticated === undefined?
-			new Promise(() => {}) :
-			Promise.resolve($authenticated);
-
-	$: username = !Boolean($authenticated)?
-			undefined:
-			auth.currentUser.displayName;
 
 	// What to do on a logout
 	function logout() {
