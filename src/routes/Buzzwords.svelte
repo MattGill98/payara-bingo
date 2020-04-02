@@ -9,7 +9,7 @@
 </script>
 
 {#each $buzzwords as item}
-    <div><p>{item}</p></div>
+    <div><p>{item.val}</p></div>
 {/each}
 
 <form on:submit|preventDefault="{submit}">

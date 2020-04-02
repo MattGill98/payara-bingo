@@ -4,6 +4,8 @@
 
 <div>
 {#each Array(9) as _, i}
-    <div><p>{$buzzwords[i]}</p></div>
+    {#if $buzzwords.length > i}
+        <div><p>{$buzzwords[i].val}</p></div>
+    {/if}
 {/each}
 </div>

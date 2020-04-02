@@ -60,9 +60,19 @@ let db = firebase.database();
 let remoteBuzzwords = db.ref('buzzwords');
 export const buzzwords = readable([], function start(set) {
     let local = [];
-    return remoteBuzzwords.on('child_added', function(data) {
+    remoteBuzzwords.on('child_added', function(data) {
         if (data) {
-            local.push(data.val());
+            local.push({
+                val: data.val(),
+                remove: () => remoteBuzzwords.child(data.key).remove()
+            });
+            set(local);
+        }
+    });
+    remoteBuzzwords.on('child_removed', function(data) {
+        if (data) {
+            let val = data.val();
+            local = local.filter(item => item.val != val);
             set(local);
         }
     });

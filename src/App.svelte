@@ -4,18 +4,18 @@
 	<Router>
 		{#if $authenticated}
 			{#if $profileConfigured}
-				{#if $isAdmin}
-					<p>Hello {$username} (Admin)</p>
-				{:else}
-					<p>Hello {$username}</p>
-				{/if}
 				<Link href="/">Grid</Link>
 				<Link href="/buzzwords">Buzzwords</Link>
 				<Link href="/results">Results</Link>
+
 				<a href="#logout" on:click|preventDefault="{logout}">Logout</a>
 
 				<Route path="/" component="{Grid}" />
-				<Route path="/buzzwords" component="{Buzzwords}" />
+				{#if $isAdmin}
+					<Route path="/buzzwords" component="{AdminBuzzwords}" />
+				{:else}
+					<Route path="/buzzwords" component="{Buzzwords}" />
+				{/if}
 				<Route path="/results" component="{Results}" />
 				<Route component="{Page404}" />
 			{:else}
@@ -52,6 +52,7 @@
 
 	import Grid from './routes/Grid.svelte';
 	import Buzzwords from './routes/Buzzwords.svelte';
+	import AdminBuzzwords from './routes/admin/Buzzwords.svelte';
 	import Results from './routes/Results.svelte';
 	import Login from './routes/Login.svelte';
 	import Register from './routes/Register.svelte';
