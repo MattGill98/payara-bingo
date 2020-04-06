@@ -18,9 +18,16 @@
     <tbody>
         {#each $buzzwords as item}
             <tr>
-                <td>{item.val}</td>
-                <td><button type="button">Select</button></td>
-                <td><button type="button">Deselect</button></td>
+                
+                <td>
+                    {#if item.selected}
+                        <strong>{item.val.text}</strong>
+                    {:else}
+                        {item.val.text}
+                    {/if}
+                </td>
+                <td><button type="button" on:click="{item.select}">Select</button></td>
+                <td><button type="button" on:click="{item.deselect}">Deselect</button></td>
                 <td><button type="button" on:click="{item.remove}">Remove</button></td>
             </tr>
         {/each}

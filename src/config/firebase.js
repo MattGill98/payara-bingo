@@ -62,24 +62,40 @@ export const buzzwords = readable([], function start(set) {
     let local = [];
     remoteBuzzwords.on('child_added', function(data) {
         if (data) {
+            let child = () => remoteBuzzwords.child(data.key);
             local.push({
+                key: data.key,
                 val: data.val(),
-                remove: () => remoteBuzzwords.child(data.key).remove()
+                remove: () => child().remove(),
+                select: () => child().update({ selected: true }),
+                deselect: () => child().update({ selected: false })
+            });
+            set(local);
+        }
+    });
+    remoteBuzzwords.on('child_changed', function(data) {
+        if (data) {
+            local = local.map(item => {
+                if (item.key == data.key) {
+                    return { ...item, ...data.val() };
+                }
+                return item;
             });
             set(local);
         }
     });
     remoteBuzzwords.on('child_removed', function(data) {
         if (data) {
-            let val = data.val();
-            local = local.filter(item => item.val != val);
+            local = local.filter(item => item.key != data.key);
             set(local);
         }
     });
 });
 
 export function addBuzzword(buzzword) {
-    remoteBuzzwords.push(buzzword);
+    remoteBuzzwords.push({
+        text: buzzword
+    });
 }
 
 export default firebase;
