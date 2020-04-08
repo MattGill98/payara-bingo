@@ -57,6 +57,7 @@ export const isAdmin = readable(undefined, function start(set) {
 });
 
 let db = firebase.database();
+
 let remoteBuzzwords = db.ref('buzzwords');
 export const buzzwords = readable([], function start(set) {
     let local = [];
@@ -92,10 +93,33 @@ export const buzzwords = readable([], function start(set) {
     });
 });
 export const selectedBuzzwords = derived(buzzwords, list => list.filter(item => item.val.selected));
+export const activeBuzzwords = derived(buzzwords, list => list.filter(item => item.val.active));
 
 export function addBuzzword(buzzword) {
     remoteBuzzwords.push({
         text: buzzword
+    });
+}
+
+let remoteGameData = db.ref('game');
+export const game = readable({}, function start(set) {
+    remoteGameData.on('value', data => {
+        set({
+            ...data.val(),
+            start: startGame,
+            end: () => remoteGameData.update({ started : false })
+        });
+    });
+});
+function startGame() {
+    remoteBuzzwords.once('value').then(data => {
+        data.forEach(dataItem => {
+            let val = dataItem.val();
+            if (val.selected !== val.active) {
+                dataItem.ref.update({ active: val.selected });
+            }
+        });
+        remoteGameData.update({ started : true });
     });
 }
 

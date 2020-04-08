@@ -18,7 +18,6 @@
     <tbody>
         {#each $buzzwords as item}
             <tr>
-                
                 <td>
                     {#if item.val.selected}
                         <strong>{item.val.text}</strong>

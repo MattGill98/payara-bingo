@@ -1,9 +1,13 @@
 <script>
-    import { selectedBuzzwords } from '../config/firebase';
+    import { activeBuzzwords, game } from '../config/firebase';
 </script>
 
 <div>
-{#each $selectedBuzzwords as item}
-    <p>{item.val.text}</p>
-{/each}
+{#if !$game.started}
+    <p>There is no active game.</p>
+{:else}
+    {#each $activeBuzzwords as item}
+        <p>{item.val.text}</p>
+    {/each}
+{/if}
 </div>

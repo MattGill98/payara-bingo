@@ -10,10 +10,11 @@
 
 				<a href="#logout" on:click|preventDefault="{logout}">Logout</a>
 
-				<Route path="/" component="{Grid}" />
 				{#if $isAdmin}
+					<Route path="/" component="{AdminGrid}" />
 					<Route path="/buzzwords" component="{AdminBuzzwords}" />
 				{:else}
+					<Route path="/" component="{Grid}" />
 					<Route path="/buzzwords" component="{Buzzwords}" />
 				{/if}
 				<Route path="/results" component="{Results}" />
@@ -51,6 +52,7 @@
 	import { navigate } from 'svelte-navaid';
 
 	import Grid from './routes/Grid.svelte';
+	import AdminGrid from './routes/admin/Grid.svelte';
 	import Buzzwords from './routes/Buzzwords.svelte';
 	import AdminBuzzwords from './routes/admin/Buzzwords.svelte';
 	import Results from './routes/Results.svelte';
