@@ -77,7 +77,7 @@ export const buzzwords = readable([], function start(set) {
         if (data) {
             local = local.map(item => {
                 if (item.key == data.key) {
-                    return { ...item, ...data.val() };
+                    return { ...item, val: data.val() };
                 }
                 return item;
             });

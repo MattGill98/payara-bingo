@@ -20,7 +20,7 @@
             <tr>
                 
                 <td>
-                    {#if item.selected}
+                    {#if item.val.selected}
                         <strong>{item.val.text}</strong>
                     {:else}
                         {item.val.text}
