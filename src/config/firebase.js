@@ -1,4 +1,4 @@
-import { readable } from 'svelte/store';
+import { readable, derived } from 'svelte/store';
 
 import firebase from 'firebase/app';
 import 'firebase/auth';
@@ -91,6 +91,7 @@ export const buzzwords = readable([], function start(set) {
         }
     });
 });
+export const selectedBuzzwords = derived(buzzwords, list => list.filter(item => item.val.selected));
 
 export function addBuzzword(buzzword) {
     remoteBuzzwords.push({
