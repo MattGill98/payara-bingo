@@ -1,11 +1,12 @@
 <script>
+    import { derived } from 'svelte/store';
     import { buzzwords } from '../config/firebase';
+
+    let selected = derived(buzzwords, list => list.filter(item => item.val.selected));
 </script>
 
 <div>
-{#each Array(9) as _, i}
-    {#if $buzzwords.length > i}
-        <div><p>{$buzzwords[i].val.text}</p></div>
-    {/if}
+{#each $selected as item}
+    <p>{item.val.text}</p>
 {/each}
 </div>
