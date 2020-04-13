@@ -56,6 +56,8 @@ export const isAdmin = readable(undefined, function start(set) {
     });
 });
 
+let functions = firebase.functions();
+
 let db = firebase.database();
 
 let remoteBuzzwords = db.ref('buzzwords');
@@ -106,21 +108,10 @@ export const game = readable({}, function start(set) {
     remoteGameData.on('value', data => {
         set({
             ...data.val(),
-            start: startGame,
-            end: () => remoteGameData.update({ started : false })
+            start: functions.httpsCallable('startGame'),
+            end: functions.httpsCallable('endGame')
         });
     });
 });
-function startGame() {
-    remoteBuzzwords.once('value').then(data => {
-        data.forEach(dataItem => {
-            let val = dataItem.val();
-            if (val.selected !== val.active) {
-                dataItem.ref.update({ active: val.selected });
-            }
-        });
-        remoteGameData.update({ started : true });
-    });
-}
 
 export default firebase;
