@@ -2,21 +2,23 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const secure = require('./util').secure;
 
+const database = admin.database();
+
 exports.startGame = functions.https.onCall(secure((data, context) => {
     draftWordsForNextGame();
     selectWordsForEachPlayer();
-    return admin.database()
+    return database
         .ref('game')
         .update({ started: true });
 }));
 exports.endGame = functions.https.onCall(secure((data, context) => {
-    return admin.database()
+    return database
         .ref('game')
         .update({ started: false });
 }));
 
 async function draftWordsForNextGame() {
-    let buzzwords = admin.database().ref('buzzwords');
+    let buzzwords = database.ref('buzzwords');
     buzzwords.once('value', data => {
         data.forEach(dataItem => {
             let val = dataItem.val();
@@ -29,7 +31,6 @@ async function draftWordsForNextGame() {
 
 async function selectWordsForEachPlayer() {
     let users = await admin.auth().listUsers().then(result => result.users);
-    let database = admin.database();
     return users
         .filter(user => user.customClaims && user.customClaims.admin)
         .forEach(user => {

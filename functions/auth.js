@@ -2,6 +2,8 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const secure = require('./util').secure;
 
+const auth = admin.auth();
+
 exports.addInitialAdmin = functions.auth.user().onCreate(user => {
     if (user.email === 'matthew.gill@live.co.uk') {
         return grantAdminRole(user.email);
@@ -17,12 +19,12 @@ exports.addAdmin = functions.https.onCall(secure((data, context) => {
 }));
 
 async function grantAdminRole(email) {
-    const user = await admin.auth().getUserByEmail(email);
+    const user = await auth.getUserByEmail(email);
     if (user.customClaims && user.customClaims.admin === true) {
         return;
     }
     console.log(`Setting ${email} to admin`);
-    return admin.auth().setCustomUserClaims(user.uid, {
+    return auth.setCustomUserClaims(user.uid, {
         admin: true
     }).then(() => ({
         result: `${email} is now an admin`
