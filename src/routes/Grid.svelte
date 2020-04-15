@@ -1,13 +1,13 @@
 <script>
-    import { activeBuzzwords, game } from '../config/firebase';
+    import { game } from '../config/firebase';
 </script>
 
 <div>
-{#if !$game.started}
+{#if !$game.started || !$game.grid}
     <p>There is no active game.</p>
 {:else}
-    {#each $activeBuzzwords as item}
-        <p>{item.val.text}</p>
+    {#each $game.grid as item}
+        <p>{item}</p>
     {/each}
 {/if}
 </div>

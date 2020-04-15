@@ -5,43 +5,40 @@ const secure = require('./util').secure;
 const auth = admin.auth();
 const database = admin.database();
 
-exports.startGame = functions.https.onCall(secure((data, context) => {
-    draftWordsForNextGame();
-    selectWordsForEachPlayer();
+exports.startGame = functions.https.onCall(secure(async (data, context) => {
+    let lists = await draftWordsForNextGame()
+        .then(buzzwords)
+        .then(words => combinations(words, 9))
+        .then(combinations => randomise(combinations.map(randomise)));
+
+    console.log('Active buzzword combinations');
+    console.log(lists)
+
+    let qualifiedUsers = await auth.listUsers()
+        .then(result => result.users.filter(user => !user.customClaims || !user.customClaims.admin));
+
+    console.log('Qualifying users');
+    console.log(qualifiedUsers);
+
+    if (qualifiedUsers.length > lists.size) {
+        throw new Error('There are not enough combinations of buzzwords to begin the game');
+    }
+
+    qualifiedUsers.forEach(user => {
+        database.ref(`game/${user.uid}`).update({
+            grid: lists.shift()
+        });
+    });
+
     return database
-        .ref('game')
+        .ref('game/global')
         .update({ started: true });
 }));
 exports.endGame = functions.https.onCall(secure((data, context) => {
     return database
-        .ref('game')
+        .ref('game/global')
         .update({ started: false });
 }));
-exports.getCombinations = functions.https.onCall((data, context) => {
-    return buzzwords()
-        .then(words => combinations(words, 9))
-        .then(combinations => randomise(combinations.map(randomise)));
-});
-
-async function draftWordsForNextGame() {
-    database.ref('buzzwords').once('value', data => {
-        data.forEach(dataItem => {
-            let val = dataItem.val();
-            if (val.selected !== val.active) {
-                dataItem.ref.update({ active: val.selected });
-            }
-        });
-    });
-}
-
-async function selectWordsForEachPlayer() {
-    let users = await auth.listUsers().then(result => result.users);
-    return users
-        .filter(user => user.customClaims && user.customClaims.admin)
-        .forEach(user => {
-            database.ref('game/' + user.uid).update({ grid: [] });
-        });
-}
 
 function randomise(arr) {
     for (var i = arr.length - 1; i > 0; i--) {
@@ -55,7 +52,7 @@ function randomise(arr) {
 
 async function combinations(arr, size) {
     if (size > arr.length) {
-        throw new Error('Subset cannot be larger than the original set');
+        throw new Error(`Subset cannot be larger than the original set. Subset size: ${size}. Set size: ${arr.length}`);
     }
     if (size == arr.length) {
         return [ arr ];
@@ -76,13 +73,27 @@ async function combinations(arr, size) {
     return results;
 }
 
+async function draftWordsForNextGame() {
+    database.ref('buzzwords').once('value', data => {
+        data.forEach(dataItem => {
+            let val = dataItem.val();
+            if (val.selected !== val.active) {
+                dataItem.ref.update({ active: val.selected });
+            }
+        });
+    });
+}
+
 async function buzzwords() {
     return await database.ref('buzzwords')
         .once('value')
         .then(data => {
             let words = [];
             data.forEach(dataItem => {
-                words.push(dataItem.val().text);
+                let val = dataItem.val();
+                if (val.active) {
+                    words.push(val.text);
+                }
             });
             return words;
         });

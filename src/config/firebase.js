@@ -103,14 +103,28 @@ export function addBuzzword(buzzword) {
     });
 }
 
-let remoteGameData = db.ref('game');
+let remoteGlobalGameData = db.ref('game/global');
 export const game = readable({}, function start(set) {
-    remoteGameData.on('value', data => {
-        set({
-            ...data.val(),
-            start: functions.httpsCallable('startGame'),
-            end: functions.httpsCallable('endGame')
-        });
+    let gameData = {
+        start: functions.httpsCallable('startGame'),
+        end: functions.httpsCallable('endGame')
+    };
+
+    function mergeData(data) {
+        gameData = { ...gameData, ...data.val() };
+        set(gameData);
+    };
+
+    remoteGlobalGameData.on('value', mergeData);
+
+    let remoteUserGameData;
+	auth.onIdTokenChanged(user => {
+        if (user) {
+            remoteUserGameData = db.ref(`game/${user.uid}`);
+            remoteUserGameData.on('value', mergeData);
+        } else if (remoteUserGameData) {
+            remoteUserGameData.off('value', mergeData);
+        }
     });
 });
 
