@@ -111,19 +111,34 @@ export const game = readable({}, function start(set) {
     };
 
     function mergeData(data) {
-        gameData = { ...gameData, ...data.val() };
+        gameData = { ...gameData, ...data };
         set(gameData);
-    };
+    }
 
-    remoteGlobalGameData.on('value', mergeData);
+    remoteGlobalGameData.on('value', data => mergeData(data.val()));
+
+    function handleRemoteUserData(data) {
+        let val = data.val();
+        if (val) {
+            val = val.map(buzzword => {
+                buzzword.toggle = () => {
+                    buzzword.selected = !Boolean(buzzword.selected);
+                    data.ref.set(JSON.parse(JSON.stringify(gameData.grid)));
+                };
+                return buzzword;
+            });
+
+            mergeData({ grid: val });
+        }
+    }
 
     let remoteUserGameData;
 	auth.onIdTokenChanged(user => {
         if (user) {
             remoteUserGameData = db.ref(`game/${user.uid}`);
-            remoteUserGameData.on('value', mergeData);
+            remoteUserGameData.on('value', handleRemoteUserData);
         } else if (remoteUserGameData) {
-            remoteUserGameData.off('value', mergeData);
+            remoteUserGameData.off('value', handleRemoteUserData);
         }
     });
 });

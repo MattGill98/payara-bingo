@@ -25,9 +25,13 @@ exports.startGame = functions.https.onCall(secure(async (data, context) => {
     }
 
     qualifiedUsers.forEach(user => {
-        database.ref(`game/${user.uid}`).update({
-            grid: lists.shift()
-        });
+        database.ref(`game/${user.uid}`).set(
+            lists.shift()
+                .map(word => ({
+                    text: word,
+                    selected: false
+                }))
+        );
     });
 
     return database
