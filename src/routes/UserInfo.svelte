@@ -1,5 +1,5 @@
 <script>
-    import firebase, { profileConfigured } from '../config/firebase';
+    import firebase from '../config/firebase';
     import { navigate } from 'svelte-navaid';
 
     const user = firebase.auth().currentUser;

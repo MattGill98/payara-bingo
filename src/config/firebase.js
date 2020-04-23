@@ -21,38 +21,19 @@ if (firebase.apps.length === 0) {
 
 const auth = firebase.auth();
 
-export const authenticated = readable(undefined, function start(set) {
-	return auth.onAuthStateChanged(user => set(Boolean(user)));
-});
-
-export const authPromise = readable(new Promise(() => {}), function start(set) {
-	return auth.onAuthStateChanged(user => set(Promise.resolve(Boolean(user))));
-});
-
-export const username = readable(undefined, function start(set) {
-	return auth.onIdTokenChanged(user => {
-        if (!user) {
-            return set(null);
-        }
-        set(user.displayName);
-    });
-});
-
-export const profileConfigured = readable(undefined, function start(set) {
-	return auth.onIdTokenChanged(user => {
-        set(Boolean(user && user.displayName));
-    });
-});
-
-export const isAdmin = readable(undefined, function start(set) {
-	return auth.onIdTokenChanged(user => {
+export const authStatus = readable({}, set => {
+    let data = {};
+    auth.onIdTokenChanged(user => {
+        data.authenticated = Boolean(user);
+        data.username = user? user.displayName : undefined;
+        data.profileConfigured = user && user.displayName;
+        data.isAdmin = false;
         if (user) {
             user.getIdTokenResult().then(token => {
-                set(token.claims && token.claims.admin);
+                data.isAdmin = token.claims && token.claims.admin;
             });
-        } else {
-            set(false);
         }
+        set(data);
     });
 });
 

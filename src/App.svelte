@@ -1,16 +1,16 @@
-{#await authPromise}
+{#await $authPromise}
 	<p>Loading...</p>
 {:then authPromiseResult}
 	<Router>
-		{#if $authenticated}
-			{#if $profileConfigured}
+		{#if authPromiseResult}
+			{#if $authStatus.profileConfigured}
 				<Link href="/">Grid</Link>
 				<Link href="/buzzwords">Buzzwords</Link>
 				<Link href="/results">Results</Link>
 
 				<a href="#logout" on:click|preventDefault="{logout}">Logout</a>
 
-				{#if $isAdmin}
+				{#if $authStatus.isAdmin}
 					<Route path="/" component="{AdminGrid}" />
 					<Route path="/buzzwords" component="{AdminBuzzwords}" />
 				{:else}
@@ -35,9 +35,17 @@
 {/await}
 
 <script>
-	import firebase, { authenticated, authPromise, username, profileConfigured, isAdmin } from './config/firebase';
+	import { derived } from 'svelte/store';
+	import firebase, { authStatus } from './config/firebase';
 
 	const auth = firebase.auth();
+
+	let authPromise = derived(authStatus, result => {
+		if (result.authenticated) {
+			return Promise.resolve(true);
+		}
+		return new Promise(() => {});
+	});
 
 	// What to do on a logout
 	function logout() {
