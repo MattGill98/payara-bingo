@@ -1,5 +1,9 @@
 <script>
-    import { game, selectedBuzzwords, activeBuzzwords } from '../../config/firebase';
+    import { derived } from 'svelte/store';
+    import { game, buzzwords } from '../../config/firebase';
+    
+    let selectedBuzzwords = derived(buzzwords, list => list.filter(item => item.val.selected));
+    let activeBuzzwords = derived(buzzwords, list => list.filter(item => item.val.active));
 </script>
 
 <h1>Game Status</h1>

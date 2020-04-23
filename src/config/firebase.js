@@ -1,4 +1,6 @@
-import { readable, derived } from 'svelte/store';
+import { readable } from 'svelte/store';
+
+///////////////////////////////////////// Initialise Firebase
 
 import firebase from 'firebase/app';
 import 'firebase/auth';
@@ -19,6 +21,8 @@ if (firebase.apps.length === 0) {
     firebase.initializeApp(firebaseConfig);
 }
 
+///////////////////////////////////////// Authentication details
+
 const auth = firebase.auth();
 
 export const authStatus = readable({}, set => {
@@ -37,7 +41,7 @@ export const authStatus = readable({}, set => {
     });
 });
 
-let functions = firebase.functions();
+///////////////////////////////////////// Buzzword details
 
 let db = firebase.database();
 
@@ -76,14 +80,16 @@ export const buzzwords = readable([], function start(set) {
         }
     });
 });
-export const selectedBuzzwords = derived(buzzwords, list => list.filter(item => item.val.selected));
-export const activeBuzzwords = derived(buzzwords, list => list.filter(item => item.val.active));
 
 export function addBuzzword(buzzword) {
     remoteBuzzwords.push({
         text: buzzword
     });
 }
+
+///////////////////////////////////////// Game details
+
+let functions = firebase.functions();
 
 let remoteGlobalGameData = db.ref('game/global');
 export const game = readable({}, function start(set) {
