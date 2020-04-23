@@ -71,7 +71,8 @@ export const buzzwords = readable([], function start(set) {
                 val: data.val(),
                 remove: () => child().remove(),
                 select: () => child().update({ selected: true }),
-                deselect: () => child().update({ selected: false })
+                deselect: () => child().update({ selected: false }),
+                verify: () => child().once('value').then(value => child().update({ verified: !Boolean(value.val().verified) }))
             });
             set(local);
         }

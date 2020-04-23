@@ -81,9 +81,11 @@ async function draftWordsForNextGame() {
     database.ref('buzzwords').once('value', data => {
         data.forEach(dataItem => {
             let val = dataItem.val();
+            let active = val.active;
             if (val.selected !== val.active) {
-                dataItem.ref.update({ active: val.selected });
+                active = val.selected;
             }
+            dataItem.ref.update({ active, verified: false });
         });
     });
 }

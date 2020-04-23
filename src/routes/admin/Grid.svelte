@@ -13,7 +13,13 @@
 <h1>Selected Buzzwords</h1>
 <div>
 {#each $selectedBuzzwords as item}
-    <p>{item.val.text}</p>
+    <p on:click="{item.verify}">
+        {#if item.val.verified}
+            <strong>{item.val.text}</strong>
+        {:else}
+            {item.val.text}
+        {/if}
+    </p>
 {/each}
 </div>
 
