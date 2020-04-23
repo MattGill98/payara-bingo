@@ -91,6 +91,8 @@ export function addBuzzword(buzzword) {
 
 let functions = firebase.functions();
 
+export const submitGrid = functions.httpsCallable('submitGrid');
+
 let remoteGlobalGameData = db.ref('game/global');
 export const game = readable({}, function start(set) {
     let gameData = {

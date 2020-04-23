@@ -5,10 +5,37 @@ const secure = require('./util').secure;
 const auth = admin.auth();
 const database = admin.database();
 
+const gridSize = 9;
+
+exports.submitGrid = functions.https.onCall(async (data, context) => {
+    let grid = await database.ref(`game/${context.auth.uid}`).once('value');
+
+    if (!grid) {
+        throw new Error('No grid found for the user');
+    }
+
+    let keys = grid.val().map(item => item.key);
+
+    console.log(grid.val());
+
+    let correctCount = (await Promise.all(
+                keys.map(key => database.ref(`buzzwords/${key}`)
+                        .once('value')
+                        .then(buzzword => Boolean(buzzword.val().verified))))
+            ).filter(val => val).length;
+
+    if (correctCount < gridSize) {
+        console.error(`User ${context.auth.uid} submitted a grid with only ${correctCount} correct words`);
+        throw new Error('The submitted grid was incorrect');
+    }
+
+    return endGame();
+});
+
 exports.startGame = functions.https.onCall(secure(async (data, context) => {
     let lists = await draftWordsForNextGame()
         .then(buzzwords)
-        .then(words => combinations(words, 9))
+        .then(words => combinations(words, gridSize))
         .then(combinations => randomise(combinations.map(randomise)));
 
     console.log('Active buzzword combinations');
@@ -25,13 +52,7 @@ exports.startGame = functions.https.onCall(secure(async (data, context) => {
     }
 
     qualifiedUsers.forEach(user => {
-        database.ref(`game/${user.uid}`).set(
-            lists.shift()
-                .map(word => ({
-                    text: word,
-                    selected: false
-                }))
-        );
+        database.ref(`game/${user.uid}`).set(lists.shift());
     });
 
     return database
@@ -39,10 +60,14 @@ exports.startGame = functions.https.onCall(secure(async (data, context) => {
         .update({ started: true });
 }));
 exports.endGame = functions.https.onCall(secure((data, context) => {
+    return endGame();
+}));
+
+function endGame() {
     return database
         .ref('game/global')
         .update({ started: false });
-}));
+}
 
 function randomise(arr) {
     for (var i = arr.length - 1; i > 0; i--) {
@@ -98,7 +123,10 @@ async function buzzwords() {
             data.forEach(dataItem => {
                 let val = dataItem.val();
                 if (val.active) {
-                    words.push(val.text);
+                    words.push({
+                        key: dataItem.key,
+                        text: val.text
+                    });
                 }
             });
             return words;

@@ -14,6 +14,8 @@
 {/if}
 </div>
 
+<button type="button" on:click="{submitGrid}">Submit</button>
+
 <script>
-    import { game } from '../config/firebase';
+    import { game, submitGrid } from '../config/firebase';
 </script>
