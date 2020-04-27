@@ -58,7 +58,7 @@ exports.startGame = functions.https.onCall(secure(async (data, context) => {
     let gameId = games().push(newGame).key;
 
     console.log(`New game ID: ${gameId}`);
-    console.log(newGame);
+    console.log(JSON.stringify(newGame, null, 2));
 
     currentGame().set(gameId);
 }));

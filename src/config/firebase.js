@@ -90,24 +90,31 @@ export const currentGameId = readable(undefined, set => {
     });
 });
 export const currentGameResults = derived(currentGameId, (gameId, set) => {
-    if (!gameId) return undefined;
+    if (!gameId) return set(undefined);
 
     db.ref(`games/${gameId}/results`)
         .on('value', data => set(data.val()));
 });
+let gridRef;
 export const myGrid = derived([authStatus, currentGameId], ([auth, currentGame], set) => {
-    if (!auth || !auth.uid || !currentGame) return undefined;
+    if (!auth || !auth.uid || !currentGame) return set(undefined);
 
-    let gridRef = db.ref(`games/${currentGame}/players/${auth.uid}`);
-
-    gridRef.on('value', data => {
-        let grid = data.val().map(dataItem => {
-            let gridItem = dataItem;
-            gridItem.select = () => { gridItem.selected = !gridItem.selected; gridRef.set(JSON.parse(JSON.stringify(grid))); };
-            return gridItem;
-        });
+    let dataHandler = data => {
+        let val = data.val();
+        let grid;
+        if (val) {
+            grid = data.val().map(dataItem => {
+                let gridItem = dataItem;
+                gridItem.select = () => { gridItem.selected = !gridItem.selected; gridRef.set(JSON.parse(JSON.stringify(grid))); };
+                return gridItem;
+            });
+        }
         set(grid);
-    });
+    };
+
+    if (gridRef) gridRef.off('value', dataHandler);
+    gridRef = db.ref(`games/${currentGame}/players/${auth.uid}`);
+    gridRef.on('value', dataHandler);
 });
 
 export default firebase;
