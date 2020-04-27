@@ -41,8 +41,8 @@
 	const auth = firebase.auth();
 
 	let authPromise = derived(authStatus, result => {
-		if (result.authenticated) {
-			return Promise.resolve(true);
+		if (result) {
+			return Promise.resolve(result.authenticated);
 		}
 		return new Promise(() => {});
 	});
