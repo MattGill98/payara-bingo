@@ -7,6 +7,64 @@ const database = admin.database();
 
 const gridSize = 9;
 
+let games = () => database.ref('games');
+let currentGame = () => games().child('current');
+
+let buzzwords = () => database.ref('buzzwords').once('value').then(value => 
+    Object.values(value.val())
+            .filter(obj => obj.selected)
+            .map(obj => obj.text));
+
+exports.startGame = functions.https.onCall(secure(async (data, context) => {
+    let validWords = await buzzwords();
+
+    console.log('Valid words');
+    console.log(validWords);
+
+    if (validWords.length < gridSize) {
+        throw new Error('Not enough valid buzzwords');
+    }
+
+    let wordObjects = randomise(validWords.map(word => ({
+        text: word
+    })));
+
+    let possibleGrids = randomise(combinations(wordObjects, gridSize));
+
+    console.log('Possible grids');
+    console.log(possibleGrids);
+
+    let eligibleUserIds = await auth.listUsers()
+        .then(result => result.users
+                .filter(user => !user.customClaims || !user.customClaims.admin)
+                .map(user => user.uid));
+
+    console.log('Eligible users');
+    console.log(eligibleUserIds);
+
+    if (possibleGrids.length < eligibleUserIds.length) {
+        throw new Error(`Not enough possible combinations. Users: ${eligibleUserIds.length}. Combinations: ${possibleGrids.length}`)
+    }
+
+    let newGame = {
+        words: wordObjects,
+        players: eligibleUserIds.reduce((acc, uid) => {
+            acc[uid] = possibleGrids.pop();
+            return acc;
+        }, {})
+    };
+
+    let gameId = games().push(newGame).key;
+
+    console.log(`New game ID: ${gameId}`);
+    console.log(newGame);
+
+    currentGame().set(gameId);
+}));
+exports.endGame = functions.https.onCall(secure((data, context) => {
+    return endGame();
+}));
+
 exports.submitGrid = functions.https.onCall(async (data, context) => {
     let grid = await database.ref(`game/${context.auth.uid}`).once('value');
 
@@ -32,41 +90,8 @@ exports.submitGrid = functions.https.onCall(async (data, context) => {
     return endGame();
 });
 
-exports.startGame = functions.https.onCall(secure(async (data, context) => {
-    let lists = await draftWordsForNextGame()
-        .then(buzzwords)
-        .then(words => combinations(words, gridSize))
-        .then(combinations => randomise(combinations.map(randomise)));
-
-    console.log('Active buzzword combinations');
-    console.log(lists)
-
-    let qualifiedUsers = await auth.listUsers()
-        .then(result => result.users.filter(user => !user.customClaims || !user.customClaims.admin));
-
-    console.log('Qualifying users');
-    console.log(qualifiedUsers);
-
-    if (qualifiedUsers.length > lists.size) {
-        throw new Error('There are not enough combinations of buzzwords to begin the game');
-    }
-
-    qualifiedUsers.forEach(user => {
-        database.ref(`game/${user.uid}`).set(lists.shift());
-    });
-
-    return database
-        .ref('game/global')
-        .update({ started: true });
-}));
-exports.endGame = functions.https.onCall(secure((data, context) => {
-    return endGame();
-}));
-
 function endGame() {
-    return database
-        .ref('game/global')
-        .update({ started: false });
+    return currentGame().set(null);
 }
 
 function randomise(arr) {
@@ -79,7 +104,7 @@ function randomise(arr) {
     return arr;
 }
 
-async function combinations(arr, size) {
+function combinations(arr, size) {
     if (size > arr.length) {
         throw new Error(`Subset cannot be larger than the original set. Subset size: ${size}. Set size: ${arr.length}`);
     }
@@ -100,35 +125,4 @@ async function combinations(arr, size) {
         }
     }
     return results;
-}
-
-async function draftWordsForNextGame() {
-    database.ref('buzzwords').once('value', data => {
-        data.forEach(dataItem => {
-            let val = dataItem.val();
-            let active = val.active;
-            if (val.selected !== val.active) {
-                active = val.selected;
-            }
-            dataItem.ref.update({ active, verified: false });
-        });
-    });
-}
-
-async function buzzwords() {
-    return await database.ref('buzzwords')
-        .once('value')
-        .then(data => {
-            let words = [];
-            data.forEach(dataItem => {
-                let val = dataItem.val();
-                if (val.active) {
-                    words.push({
-                        key: dataItem.key,
-                        text: val.text
-                    });
-                }
-            });
-            return words;
-        });
 }

@@ -3,8 +3,10 @@
 
     let input;
     function submit() {
-        addBuzzword(input);
-        input = "";
+        if (input) {
+            addBuzzword(input);
+            input = "";
+        }
     }
 </script>
 
@@ -18,15 +20,13 @@
     <tbody>
         {#each $buzzwords as item}
             <tr>
-                <td>
-                    {#if item.val.selected}
-                        <strong>{item.val.text}</strong>
+                <td on:click="{item.select}">
+                    {#if item.selected}
+                        <strong>{item.text}</strong>
                     {:else}
-                        {item.val.text}
+                        {item.text}
                     {/if}
                 </td>
-                <td><button type="button" on:click="{item.select}">Select</button></td>
-                <td><button type="button" on:click="{item.deselect}">Deselect</button></td>
                 <td><button type="button" on:click="{item.remove}">Remove</button></td>
             </tr>
         {/each}

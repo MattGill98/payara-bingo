@@ -1,4 +1,4 @@
-import { readable } from 'svelte/store';
+import { readable, derived } from 'svelte/store';
 
 ///////////////////////////////////////// Initialise Firebase
 
@@ -25,11 +25,12 @@ if (firebase.apps.length === 0) {
 
 const auth = firebase.auth();
 
-export const authStatus = readable({}, set => {
+export const authStatus = readable(undefined, set => {
     let data = {};
     auth.onIdTokenChanged(user => {
         data.authenticated = Boolean(user);
         data.username = user? user.displayName : undefined;
+        data.uid = user? user.uid : undefined;
         data.profileConfigured = user && user.displayName;
         data.isAdmin = false;
         if (user) {
@@ -46,40 +47,23 @@ export const authStatus = readable({}, set => {
 let db = firebase.database();
 
 let remoteBuzzwords = db.ref('buzzwords');
-export const buzzwords = readable([], function start(set) {
-    let local = [];
-    remoteBuzzwords.on('child_added', function(data) {
-        if (data) {
-            let child = () => remoteBuzzwords.child(data.key);
-            local.push({
-                key: data.key,
-                val: data.val(),
-                remove: () => child().remove(),
-                select: () => child().update({ selected: true }),
-                deselect: () => child().update({ selected: false }),
-                verify: () => child().once('value').then(value => child().update({ verified: !Boolean(value.val().verified) }))
-            });
-            set(local);
-        }
-    });
-    remoteBuzzwords.on('child_changed', function(data) {
-        if (data) {
-            local = local.map(item => {
-                if (item.key == data.key) {
-                    return { ...item, val: data.val() };
-                }
-                return item;
-            });
-            set(local);
-        }
-    });
-    remoteBuzzwords.on('child_removed', function(data) {
-        if (data) {
-            local = local.filter(item => item.key != data.key);
-            set(local);
-        }
-    });
-});
+export const buzzwords = readable([], set => remoteBuzzwords.on('value', buzzwordsResult => {
+    if (!buzzwordsResult) return set([]);
+    let buzzwordsVal = buzzwordsResult.val();
+    if (!buzzwordsVal) return set([]);
+
+    set(Object.keys(buzzwordsVal).map(buzzwordKey => {
+        let ref = () => buzzwordsResult.child(buzzwordKey).ref;
+        let buzzword = buzzwordsVal[buzzwordKey];
+        return {
+            key: buzzwordKey,
+            ...buzzword,
+            select: () => ref().update({ selected: !Boolean(buzzword.selected) }),
+            remove: () => ref().remove()
+        };
+    }));
+}));
+export const selectedBuzzwords = derived(buzzwords, list => list.filter(item => item.selected));
 
 export function addBuzzword(buzzword) {
     remoteBuzzwords.push({
@@ -92,44 +76,31 @@ export function addBuzzword(buzzword) {
 let functions = firebase.functions();
 
 export const submitGrid = functions.httpsCallable('submitGrid');
+export const startGame = functions.httpsCallable('startGame');
+export const endGame = functions.httpsCallable('endGame');
 
-let remoteGlobalGameData = db.ref('game/global');
-export const game = readable({}, function start(set) {
-    let gameData = {
-        start: functions.httpsCallable('startGame'),
-        end: functions.httpsCallable('endGame')
-    };
+let currentGameRef = db.ref('games/current');
+export const currentGameId = readable(undefined, set => {
+    currentGameRef.on('value', data => {
+        if (!data) return set(undefined);
+        let gameId = data.val();
+        if (!gameId) return set(undefined);
 
-    function mergeData(data) {
-        gameData = { ...gameData, ...data };
-        set(gameData);
-    }
+        set(gameId);
+    });
+});
+export const myGrid = derived([authStatus, currentGameId], ([auth, currentGame], set) => {
+    if (!auth || !auth.uid || !currentGame) return undefined;
 
-    remoteGlobalGameData.on('value', data => mergeData(data.val()));
+    let gridRef = db.ref(`games/${currentGame}/players/${auth.uid}`);
 
-    function handleRemoteUserData(data) {
-        let val = data.val();
-        if (val) {
-            val = val.map(buzzword => {
-                buzzword.toggle = () => {
-                    buzzword.selected = !Boolean(buzzword.selected);
-                    data.ref.set(JSON.parse(JSON.stringify(gameData.grid)));
-                };
-                return buzzword;
-            });
-
-            mergeData({ grid: val });
-        }
-    }
-
-    let remoteUserGameData;
-	auth.onIdTokenChanged(user => {
-        if (user) {
-            remoteUserGameData = db.ref(`game/${user.uid}`);
-            remoteUserGameData.on('value', handleRemoteUserData);
-        } else if (remoteUserGameData) {
-            remoteUserGameData.off('value', handleRemoteUserData);
-        }
+    gridRef.on('value', data => {
+        let grid = data.val().map(dataItem => {
+            let gridItem = dataItem;
+            gridItem.select = () => { gridItem.selected = true; gridRef.set(JSON.parse(JSON.stringify(grid))); };
+            return gridItem;
+        });
+        set(grid);
     });
 });
 
