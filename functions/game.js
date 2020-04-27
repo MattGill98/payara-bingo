@@ -9,6 +9,7 @@ const gridSize = 9;
 
 let games = () => database.ref('games');
 let currentGame = () => games().child('current');
+let previousGame = () => games().child('previous');
 
 let buzzwords = () => database.ref('buzzwords').once('value').then(value => 
     Object.values(value.val())
@@ -89,9 +90,18 @@ exports.submitGrid = functions.https.onCall(async (data, context) => {
 
     return endGame();
 });
+exports.collectResults = functions.database.ref('games/{gameId}/players/{playerId}').onUpdate((snapshot, context) => {
+    let result = snapshot.after.val();
+    let gameId = context.params.gameId;
+    let playerId = context.params.playerId;
+    return database.ref(`games/${gameId}/results/${playerId}`)
+        .set(result.filter(word => word.selected).length);
+});
 
-function endGame() {
-    return currentGame().set(null);
+async function endGame() {
+    let gameId = await currentGame().once('value');
+    return previousGame().set(gameId.val())
+        .then(() => currentGame().set(null))
 }
 
 function randomise(arr) {

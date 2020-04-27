@@ -89,6 +89,12 @@ export const currentGameId = readable(undefined, set => {
         set(gameId);
     });
 });
+export const currentGameResults = derived(currentGameId, (gameId, set) => {
+    if (!gameId) return undefined;
+
+    db.ref(`games/${gameId}/results`)
+        .on('value', data => set(data.val()));
+});
 export const myGrid = derived([authStatus, currentGameId], ([auth, currentGame], set) => {
     if (!auth || !auth.uid || !currentGame) return undefined;
 
@@ -97,7 +103,7 @@ export const myGrid = derived([authStatus, currentGameId], ([auth, currentGame],
     gridRef.on('value', data => {
         let grid = data.val().map(dataItem => {
             let gridItem = dataItem;
-            gridItem.select = () => { gridItem.selected = true; gridRef.set(JSON.parse(JSON.stringify(grid))); };
+            gridItem.select = () => { gridItem.selected = !gridItem.selected; gridRef.set(JSON.parse(JSON.stringify(grid))); };
             return gridItem;
         });
         set(grid);
