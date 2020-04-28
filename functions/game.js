@@ -97,8 +97,13 @@ exports.collectResults = functions.database.ref('games/{gameId}/players/{playerI
     let result = snapshot.after.val();
     let gameId = context.params.gameId;
     let playerId = context.params.playerId;
-    return database.ref(`games/${gameId}/results/${playerId}`)
-        .set(result.filter(word => word.selected).length);
+    return auth.getUser(playerId)
+        .then(record => record.displayName)
+        .then(displayName => database.ref(`games/${gameId}/results/${playerId}`)
+            .set({
+                name: displayName,
+                score: result.filter(word => word.selected).length
+            }));
 });
 
 async function endGame() {
