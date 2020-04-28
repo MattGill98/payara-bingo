@@ -47,12 +47,15 @@ exports.startGame = functions.https.onCall(secure(async (data, context) => {
         throw new Error(`Not enough possible combinations. Users: ${eligibleUserIds.length}. Combinations: ${possibleGrids.length}`)
     }
 
+    let reduceUsersToMap = func => eligibleUserIds.reduce((acc, uid) => {
+        acc[uid] = func(uid);
+        return acc;
+    }, {});
+
     let newGame = {
         words: wordObjects,
-        players: eligibleUserIds.reduce((acc, uid) => {
-            acc[uid] = possibleGrids.pop();
-            return acc;
-        }, {})
+        players: reduceUsersToMap(uid => possibleGrids.pop()),
+        results: {}
     };
 
     let gameId = games().push(newGame).key;

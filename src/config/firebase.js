@@ -79,22 +79,25 @@ export const submitGrid = functions.httpsCallable('submitGrid');
 export const startGame = functions.httpsCallable('startGame');
 export const endGame = functions.httpsCallable('endGame');
 
-let currentGameRef = db.ref('games/current');
-export const currentGameId = readable(undefined, set => {
-    currentGameRef.on('value', data => {
+let refToStore = ref => readable(undefined, set => {
+    ref.on('value', data => {
         if (!data) return set(undefined);
         let gameId = data.val();
-        if (!gameId) return set(undefined);
 
         set(gameId);
     });
 });
-export const currentGameResults = derived(currentGameId, (gameId, set) => {
+let deriveResultsFromIdStore = idStore => derived(idStore, (gameId, set) => {
     if (!gameId) return set(undefined);
 
     db.ref(`games/${gameId}/results`)
-        .on('value', data => set(data.val()));
+        .on('value', data => set(data.val()? data.val() : {}));
 });
+export const currentGameId = refToStore(db.ref('games/current'));
+export const previousGameId = refToStore(db.ref('games/previous'));
+export const currentGameResults = deriveResultsFromIdStore(currentGameId);
+export const previousGameResults = deriveResultsFromIdStore(previousGameId);
+
 let gridRef;
 export const myGrid = derived([authStatus, currentGameId], ([auth, currentGame], set) => {
     if (!auth || !auth.uid || !currentGame) return set(undefined);
