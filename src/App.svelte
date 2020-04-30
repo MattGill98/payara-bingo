@@ -15,7 +15,6 @@
 
 	import Authenticated from './Authenticated.svelte';
 	import Unauthenticated from './Unauthenticated.svelte';
-	import Page404 from './routes/404.svelte';
 </script>
 
 {#await $authPromise}
@@ -27,6 +26,5 @@
 		{:else}
 			<Unauthenticated />
 		{/if}
-		<Route component="{Page404}" />
 	</Router>
 {/await}

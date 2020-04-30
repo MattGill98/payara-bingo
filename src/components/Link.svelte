@@ -1,0 +1,38 @@
+<script>
+    import { getContext } from 'svelte';
+    import { derived } from 'svelte/store';
+    import Link from 'svelte-navaid/Link.svelte';
+    
+    export let defaultLink = false;
+    export let href;
+
+    let active = derived(getContext('navaid').active, contextActive => {
+        if (!contextActive || !contextActive.path) return Boolean(defaultLink);
+        return contextActive.path === href;
+    });
+</script>
+
+<div aria-current="{$active? true : undefined}">
+    <Link href="{href}"><slot /></Link>
+</div>
+
+<style>
+    div {
+        position: relative;
+        padding: 7px 10px;
+        margin: 0;
+    }
+
+    [aria-current]::before {
+        position: absolute;
+        z-index: -1;
+		content: '';
+		width: 100%;
+		height: 100%;
+        border-radius: 3px 3px 0 0;
+        background-color: #0076A84D;
+		display: block;
+        bottom: 0px;
+        left: 0px;
+    }
+</style>

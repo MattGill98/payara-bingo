@@ -26,6 +26,7 @@
 	import AdminBuzzwords from './routes/admin/Buzzwords.svelte';
 	import Results from './routes/Results.svelte';
 	import UserInfo from './routes/UserInfo.svelte';
+	import Page404 from './routes/404.svelte';
 </script>
 
 {#if $authStatus.profileConfigured}
@@ -47,3 +48,4 @@
 	<a href="#logout" on:click|preventDefault="{logout}">Logout</a>
 	<Route component="{UserInfo}" />
 {/if}
+<Route component="{Page404}" />
