@@ -19,7 +19,7 @@
 </script>
 
 <form on:submit|preventDefault="{login}">
-    <input type="email" bind:value="{email}" />
-    <input type="password" bind:value="{password}" />
+    <input type="email" bind:value="{email}" placeholder="Email" />
+    <input type="password" bind:value="{password}" placeholder="Password" />
     <input type="submit" value="Login" />
 </form>
