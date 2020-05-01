@@ -91,7 +91,14 @@ let deriveResultsFromIdStore = idStore => derived(idStore, (gameId, set) => {
     if (!gameId) return set(undefined);
 
     db.ref(`games/${gameId}/results`)
-        .on('value', data => set(data.val()? data.val() : {}));
+        .on('value', data => {
+            let val = data.val();
+            if (!val) return {};
+            Object.keys(val).forEach(uid => {
+                if (val[uid].score === undefined) delete val[uid];
+            });
+            set(val);
+        });
 });
 export const currentGameId = refToStore(db.ref('games/current'));
 export const previousGameId = refToStore(db.ref('games/previous'));

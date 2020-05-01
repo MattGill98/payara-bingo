@@ -17,7 +17,7 @@ let buzzwords = () => database.ref('buzzwords').once('value').then(value =>
             .map(obj => obj.text));
 
 exports.startGame = functions.https.onCall(secure(async (data, context) => {
-    let validWords = await buzzwords();
+    let validWords = await buzzwords().then(randomise);
 
     console.log('Valid words');
     console.log(validWords);
@@ -26,36 +26,35 @@ exports.startGame = functions.https.onCall(secure(async (data, context) => {
         throw new Error('Not enough valid buzzwords');
     }
 
-    let wordObjects = randomise(validWords.map(word => ({
+    let wordObjects = validWords.map(word => ({
         text: word
-    })));
+    }));
 
-    let possibleGrids = randomise(combinations(wordObjects, gridSize));
+    let possibleGrids = await combinations(wordObjects, gridSize).then(randomise);
 
     console.log('Possible grids');
     console.log(possibleGrids);
 
-    let eligibleUserIds = await auth.listUsers()
-        .then(result => result.users
-                .filter(user => !user.customClaims || !user.customClaims.admin)
-                .map(user => user.uid));
+    let users = (await auth.listUsers()).users;
+    // Get all users except admins
+    let eligibleUsers = users.filter(user => !user.customClaims || !user.customClaims.admin);
 
     console.log('Eligible users');
-    console.log(eligibleUserIds);
+    console.log(eligibleUsers.map(user => ({ name: user.displayName, uid: user.uid })));
 
-    if (possibleGrids.length < eligibleUserIds.length) {
-        throw new Error(`Not enough possible combinations. Users: ${eligibleUserIds.length}. Combinations: ${possibleGrids.length}`)
+    if (possibleGrids.length < eligibleUsers.length) {
+        throw new Error(`Not enough possible combinations. Users: ${eligibleUsers.length}. Combinations: ${possibleGrids.length}`)
     }
 
-    let reduceUsersToMap = func => eligibleUserIds.reduce((acc, uid) => {
-        acc[uid] = func(uid);
+    let userIdMap = func => eligibleUsers.reduce((acc, user) => {
+        acc[user.uid] = func(user);
         return acc;
     }, {});
 
     let newGame = {
         words: wordObjects,
-        players: reduceUsersToMap(uid => possibleGrids.pop()),
-        results: {}
+        players: userIdMap(() => possibleGrids.pop()),
+        results: userIdMap(user => ({ name: user.displayName }))
     };
 
     let gameId = games().push(newGame).key;
@@ -70,7 +69,8 @@ exports.endGame = functions.https.onCall(secure((data, context) => {
 }));
 
 exports.submitGrid = functions.https.onCall(async (data, context) => {
-    let grid = await database.ref(`game/${context.auth.uid}`).once('value');
+    let uid = context.auth.uid;
+    let grid = await database.ref(`game/${uid}`).once('value');
 
     if (!grid) {
         throw new Error('No grid found for the user');
@@ -87,23 +87,22 @@ exports.submitGrid = functions.https.onCall(async (data, context) => {
             ).filter(val => val).length;
 
     if (correctCount < gridSize) {
-        console.error(`User ${context.auth.uid} submitted a grid with only ${correctCount} correct words`);
+        console.error(`User ${uid} submitted a grid with only ${correctCount} correct words`);
         throw new Error('The submitted grid was incorrect');
     }
 
+    console.log(`User ${uid} has won the game`);
     return endGame();
 });
-exports.collectResults = functions.database.ref('games/{gameId}/players/{playerId}').onUpdate((snapshot, context) => {
-    let result = snapshot.after.val();
+exports.collectResults = functions.database.ref('games/{gameId}/players/{playerId}').onUpdate(async (snapshot, context) => {
     let gameId = context.params.gameId;
     let playerId = context.params.playerId;
-    return auth.getUser(playerId)
-        .then(record => record.displayName)
-        .then(displayName => database.ref(`games/${gameId}/results/${playerId}`)
-            .set({
-                name: displayName,
-                score: result.filter(word => word.selected).length
-            }));
+
+    let realResult = (await snapshot.after.ref.once('value')).val();
+
+    return await database.ref(`games/${gameId}/results/${playerId}`)
+            .update({ score: realResult.filter(word => word.selected).length })
+            .then(() => 'Results updated');
 });
 
 async function endGame() {
@@ -122,7 +121,7 @@ function randomise(arr) {
     return arr;
 }
 
-function combinations(arr, size) {
+async function combinations(arr, size) {
     if (size > arr.length) {
         throw new Error(`Subset cannot be larger than the original set. Subset size: ${size}. Set size: ${arr.length}`);
     }
