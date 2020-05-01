@@ -17,7 +17,7 @@
 	}
 
 	import Route from 'svelte-navaid/Route.svelte';
-	import Link from 'svelte-navaid/Link.svelte';
+	import Link from './components/Link.svelte';
 	import { navigate } from 'svelte-navaid';
 
 	import Grid from './routes/Grid.svelte';
@@ -30,11 +30,12 @@
 </script>
 
 {#if $authStatus.profileConfigured}
-	<Link href="/">Grid</Link>
-	<Link href="/buzzwords">Buzzwords</Link>
-	<Link href="/results">Results</Link>
-
-	<a href="#logout" on:click|preventDefault="{logout}">Logout</a>
+	<div id="tabs">
+		<Link href="/">Grid</Link>
+		<Link href="/buzzwords">Buzzwords</Link>
+		<Link href="/results">Results</Link>
+		<Link href="#logout" onclick="{logout}">Logout</Link>
+	</div>
 
 	{#if $authStatus.isAdmin}
 		<Route path="/" component="{AdminGrid}" />
@@ -45,7 +46,27 @@
 	{/if}
 	<Route path="/results" component="{Results}" />
 {:else}
-	<a href="#logout" on:click|preventDefault="{logout}">Logout</a>
+	<Link href="#logout" onclick="{logout}">Logout</Link>
 	<Route component="{UserInfo}" />
 {/if}
 <Route component="{Page404}" />
+
+<svelte:head>
+	<style>
+		body {
+			background-color: #FFFFFF;
+		}
+	</style>
+</svelte:head>
+
+<style>
+	#tabs {
+		background-color: #002C3E;
+
+		display: flex;
+		flex-flow: row nowrap;
+		justify-content: space-around;
+		height: 10%;
+		align-items: flex-end;
+	}
+</style>

@@ -5,6 +5,14 @@
     
     export let defaultLink = false;
     export let href;
+    export let onclick = undefined;
+
+    function handleClick(event) {
+        if (onclick) {
+            event.preventDefault();
+            onclick(event);
+        }
+    }
 
     let active = derived(getContext('navaid').active, contextActive => {
         if (!contextActive || !contextActive.path) return Boolean(defaultLink);
@@ -12,7 +20,7 @@
     });
 </script>
 
-<div aria-current="{$active? true : undefined}">
+<div on:click="{handleClick}" aria-current="{$active? true : undefined}">
     <Link href="{href}"><slot /></Link>
 </div>
 
