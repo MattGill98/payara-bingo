@@ -2,30 +2,25 @@
     import { myGrid, submitGrid } from '../config/firebase';
 </script>
 
-<div id="content">
-    <div id="grid">
-        {#if !$myGrid}
-            <p>There is no active game.</p>
-        {:else}
-            {#each $myGrid as item}
-                <div class="square" class:selected="{item.selected}" on:click="{item.select}">
-                    <div>
-                        <span>{item.text}</span>
-                    </div>
+<div id="grid">
+    {#if !$myGrid}
+        <p>There is no active game.</p>
+    {:else}
+        {#each $myGrid as item}
+            <div class="square" class:selected="{item.selected}" on:click="{item.select}">
+                <div>
+                    <span>{item.text}</span>
                 </div>
-            {/each}
-        {/if}
-    </div>
-
-    <button type="button" on:click="{submitGrid}">Submit</button>
+            </div>
+        {/each}
+    {/if}
 </div>
 
-<style>
-    #content {
-        padding: 121px 16px 0;
-    }
+<button type="button" on:click="{submitGrid}">Submit</button>
 
+<style>
     #grid {
+        margin-top: 121px;
         min-width: 200px;
         max-width: 900px;
         display: flex;

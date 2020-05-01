@@ -37,14 +37,16 @@
 		<Link href="#logout" onclick="{logout}">Logout</Link>
 	</div>
 
-	{#if $authStatus.isAdmin}
-		<Route path="/" component="{AdminGrid}" />
-		<Route path="/buzzwords" component="{AdminBuzzwords}" />
-	{:else}
-		<Route path="/" component="{Grid}" />
-		<Route path="/buzzwords" component="{Buzzwords}" />
-	{/if}
-	<Route path="/results" component="{Results}" />
+	<div id="content">
+		{#if $authStatus.isAdmin}
+			<Route path="/" component="{AdminGrid}" />
+			<Route path="/buzzwords" component="{AdminBuzzwords}" />
+		{:else}
+			<Route path="/" component="{Grid}" />
+			<Route path="/buzzwords" component="{Buzzwords}" />
+		{/if}
+		<Route path="/results" component="{Results}" />
+	</div>
 {:else}
 	<Link href="#logout" onclick="{logout}">Logout</Link>
 	<Route component="{UserInfo}" />
@@ -60,6 +62,15 @@
 </svelte:head>
 
 <style>
+    #content {
+		padding: 0 16px;
+		margin: auto;
+		width: 100%;
+		box-sizing: border-box;
+		max-width: 500px;
+		text-align: center;
+	}
+
 	#tabs {
 		background-color: #002C3E;
 
