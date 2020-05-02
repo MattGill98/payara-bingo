@@ -3,6 +3,7 @@
 	font-style: normal;
 	font-weight: normal;
 	font-size: 16px;
+	line-height: 21px;
 
 	color: #434445;
 }
@@ -17,10 +18,10 @@ html, body {
 	margin: 0;
 }
 
-input[type="email"],input[type="password"] {
-	padding: 0px 20px;
+input[type="email"],input[type="password"],input[type="text"] {
+	padding: 0 20px;
 	width: auto;
-	height: 37px;
+	height: 35px;
 
 	text-align: center;
 	
@@ -29,14 +30,35 @@ input[type="email"],input[type="password"] {
 	border-radius: 3px;
 }
 
-button, input[type="submit"] {
-	padding: 7px 56px;
+button[type="submit"], input[type="submit"] {
+	padding: 0 10px;
 	width: auto;
 	height: 37px;
 
 	font-weight: bold;
 
-	background: #F0981B;
+	background-color: #F0981B;
 	border: 1px solid #86979C;
 	border-radius: 3px;
+}
+
+.selectable {
+	background-color: #DAE0E2;
+	border-radius: 3px;
+    box-sizing: border-box;
+}
+
+.selectable, .selectable span {
+	color: #002C3E;
+	font-weight: normal;
+}
+
+.selectable.selected {
+	background-color: #002C3E;
+    border: 3px solid #F0981B;
+}
+
+.selectable.selected, .selectable.selected span {
+	color: #FFFFFF;
+	font-weight: bold;
 }

@@ -61,7 +61,7 @@ export const buzzwords = readable([], set => remoteBuzzwords.on('value', buzzwor
             select: () => ref().update({ selected: !Boolean(buzzword.selected) }),
             remove: () => ref().remove()
         };
-    }));
+    }).reverse());
 }));
 export const selectedBuzzwords = derived(buzzwords, list => list.filter(item => item.selected));
 

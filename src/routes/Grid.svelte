@@ -7,7 +7,7 @@
         <p>There is no active game.</p>
     {:else}
         {#each $myGrid as item}
-            <div class="square" class:selected="{item.selected}" on:click="{item.select}">
+            <div class="square selectable" class:selected="{item.selected}" on:click="{item.select}">
                 <div>
                     <span>{item.text}</span>
                 </div>
@@ -16,11 +16,11 @@
     {/if}
 </div>
 
-<button type="button" on:click="{submitGrid}">Submit</button>
+<button type="submit" on:click="{submitGrid}">Submit</button>
 
 <style>
     #grid {
-        margin-top: 121px;
+        margin-top: 115px;
         min-width: 200px;
         max-width: 900px;
         display: flex;
@@ -33,14 +33,8 @@
         flex: 0 0 32%;
         margin-top: 2%;
 
-        background-color: #DAE0E2;
-        border-radius: 3px;
-    }
-
-    .square.selected {
-        background-color: #002C3E;
-        outline: 3px solid #F0981B;
-        outline-offset: -2px;
+        flex: 0 0 32%;
+        margin-top: 2%;
     }
 
     .square:after {
@@ -61,12 +55,6 @@
 
     .square > div > span {
         vertical-align: middle;
-        color: #002C3E;
-    }
-
-    .square.selected > div > span {
-        color: #DAE0E2;
-        font-weight: bold;
     }
 
     button {

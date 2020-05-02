@@ -21,9 +21,8 @@
 	import { navigate } from 'svelte-navaid';
 
 	import Grid from './routes/Grid.svelte';
-	import AdminGrid from './routes/admin/Grid.svelte';
+	import GameManagement from './routes/GameManagement.svelte';
 	import Buzzwords from './routes/Buzzwords.svelte';
-	import AdminBuzzwords from './routes/admin/Buzzwords.svelte';
 	import Results from './routes/Results.svelte';
 	import UserInfo from './routes/UserInfo.svelte';
 	import Page404 from './routes/404.svelte';
@@ -31,7 +30,11 @@
 
 {#if $authStatus.profileConfigured}
 	<div id="tabs">
-		<Link href="/">Grid</Link>
+		{#if $authStatus.isAdmin}
+			<Link href="/">Game</Link>
+		{:else}
+			<Link href="/">Grid</Link>
+		{/if}
 		<Link href="/buzzwords">Buzzwords</Link>
 		<Link href="/results">Results</Link>
 		<Link href="#logout" onclick="{logout}">Logout</Link>
@@ -39,12 +42,11 @@
 
 	<div id="content">
 		{#if $authStatus.isAdmin}
-			<Route path="/" component="{AdminGrid}" />
-			<Route path="/buzzwords" component="{AdminBuzzwords}" />
+			<Route path="/" component="{GameManagement}" />
 		{:else}
 			<Route path="/" component="{Grid}" />
-			<Route path="/buzzwords" component="{Buzzwords}" />
 		{/if}
+		<Route path="/buzzwords" component="{Buzzwords}" />
 		<Route path="/results" component="{Results}" />
 	</div>
 {:else}
@@ -63,8 +65,9 @@
 
 <style>
     #content {
-		padding: 0 16px;
+		padding: 16px 16px 0;
 		margin: auto;
+		height: 100%;
 		width: 100%;
 		box-sizing: border-box;
 		max-width: 500px;
