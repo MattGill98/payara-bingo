@@ -66,9 +66,11 @@ export const buzzwords = readable([], set => remoteBuzzwords.on('value', buzzwor
 export const selectedBuzzwords = derived(buzzwords, list => list.filter(item => item.selected));
 
 export function addBuzzword(buzzword) {
-    remoteBuzzwords.push({
-        text: buzzword
-    });
+    if (buzzword) {
+        remoteBuzzwords.push({
+            text: buzzword
+        });
+    }
 }
 
 ///////////////////////////////////////// Game details
