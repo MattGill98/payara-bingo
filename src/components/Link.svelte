@@ -29,11 +29,12 @@
         position: relative;
         padding: 7px 10px;
         margin: 0;
+        z-index: 1;
     }
 
-    [aria-current]::before {
-        position: absolute;
+    [aria-current]::after {
         z-index: -1;
+        position: absolute;
 		content: '';
 		width: 100%;
 		height: 100%;
