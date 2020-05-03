@@ -13,6 +13,11 @@ a {
 	color: #FFFFFF;
 }
 
+h1 {
+	font-size: 22px;
+	color: #F0981B;
+}
+
 html, body {
 	height: 100%;
 	margin: 0;
