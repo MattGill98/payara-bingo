@@ -13,12 +13,13 @@
 	import Route from 'svelte-navaid/Route.svelte';
 	import Link from 'svelte-navaid/Link.svelte';
 
+	import LoadingPage from './Loading.svelte';
 	import Authenticated from './Authenticated.svelte';
 	import Unauthenticated from './Unauthenticated.svelte';
 </script>
 
 {#await $authPromise}
-	<p>Loading...</p>
+	<LoadingPage />
 {:then authPromiseResult}
 	<Router>
 		{#if authPromiseResult}
