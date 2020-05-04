@@ -69,22 +69,29 @@ exports.endGame = functions.https.onCall(secure((data, context) => {
 }));
 
 exports.submitGrid = functions.https.onCall(async (data, context) => {
+    let gameId = (await currentGame().once('value')).val();
     let uid = context.auth.uid;
-    let grid = await database.ref(`game/${uid}`).once('value');
 
-    if (!grid) {
-        throw new Error('No grid found for the user');
+    let playerGridRef = (await database.ref(`games/${gameId}/players/${uid}`).once('value'));
+
+    if (!playerGridRef.exists()) {
+        throw new Error(`User ${uid} is not playing this game`);
     }
 
-    let keys = grid.val().map(item => item.key);
+    let playerGrid = playerGridRef.val();
 
-    console.log(grid.val());
+    console.log(`Player ${uid} grid: ${JSON.stringify(playerGrid, null, 2)}`);
+    
+    let gameGrid = (await database.ref(`games/${gameId}/words`).once('value')).val();
 
-    let correctCount = (await Promise.all(
-                keys.map(key => database.ref(`buzzwords/${key}`)
-                        .once('value')
-                        .then(buzzword => Boolean(buzzword.val().verified))))
-            ).filter(val => val).length;
+    console.log(`Game grid: ${JSON.stringify(gameGrid, null, 2)}`);
+
+    let correctCount = gameGrid
+        // Only verified words
+        .filter(word => word.verified)
+        // Only words in the players grid
+        .filter(word => playerGrid.filter(v => v.text === word.text).length)
+        .length;
 
     if (correctCount < gridSize) {
         console.error(`User ${uid} submitted a grid with only ${correctCount} correct words`);
