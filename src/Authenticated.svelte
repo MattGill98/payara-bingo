@@ -44,12 +44,12 @@
 		{/if}
 		<Route path="/buzzwords" component="{Buzzwords}" />
 		<Route path="/results" component="{Results}" />
+		<Route component="{Page404}" />
 	</div>
 {:else}
 	<Link href="#logout" onclick="{logout}">Logout</Link>
 	<Route component="{UserInfo}" />
 {/if}
-<Route component="{Page404}" />
 
 <svelte:head>
 	<style>
