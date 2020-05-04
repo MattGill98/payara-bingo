@@ -1,7 +1,10 @@
 <script>
+    import { derived } from 'svelte/store';
     import { myGrid, submitGrid } from '../config/firebase';
 
     let victory = false;
+
+    let gridComplete = derived(myGrid, grid => grid && grid.length === grid.filter(item => item.selected).length);
 
     let errorMessage = undefined;
     function submit() {
@@ -23,22 +26,22 @@
     {#if errorMessage}
         <div id="error"><span>{errorMessage}</span></div>
     {/if}
-
-    <div id="grid">
         {#if !$myGrid}
             <p>There is no active game.</p>
         {:else}
-            {#each $myGrid as item}
-                <div class="square selectable" class:selected="{item.selected}" on:click="{item.select}">
-                    <div>
-                        <span>{item.text}</span>
+            <div id="grid">
+                {#each $myGrid as item}
+                    <div class="square selectable" class:selected="{item.selected}" on:click="{item.select}">
+                        <div>
+                            <span>{item.text}</span>
+                        </div>
                     </div>
-                </div>
-            {/each}
+                {/each}
+            </div>
         {/if}
-    </div>
-
-    <button type="submit" on:click="{submit}">Submit</button>
+    {#if $gridComplete}
+        <button type="submit" on:click="{submit}">Bingo!</button>
+    {/if}
 {/if}
 
 <style>
