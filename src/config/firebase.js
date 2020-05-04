@@ -89,23 +89,35 @@ let refToStore = ref => readable(undefined, set => {
         set(gameId);
     });
 });
-let deriveResultsFromIdStore = idStore => derived(idStore, (gameId, set) => {
+let deriveFromIdStore = (idStore, propertyName, arrayFunction) => derived(idStore, (gameId, set) => {
     if (!gameId) return set(undefined);
 
-    db.ref(`games/${gameId}/results`)
+    db.ref(`games/${gameId}/${propertyName}`)
         .on('value', data => {
             let val = data.val();
             if (!val) return {};
-            Object.keys(val).forEach(uid => {
-                if (val[uid].score === undefined) delete val[uid];
-            });
+            if (arrayFunction) val = arrayFunction(val, data.ref);
             set(val);
         });
 });
+let deriveResultsFromStore = idStore => deriveFromIdStore(idStore, 'results',
+    arr => {
+        Object.keys(arr).forEach(uid => {
+            if (arr[uid].score === undefined) delete arr[uid];
+        });
+        return arr;
+    });
 export const currentGameId = refToStore(db.ref('games/current'));
 export const previousGameId = refToStore(db.ref('games/previous'));
-export const currentGameResults = deriveResultsFromIdStore(currentGameId);
-export const previousGameResults = deriveResultsFromIdStore(previousGameId);
+export const currentGameResults = deriveResultsFromStore(currentGameId);
+export const previousGameResults = deriveResultsFromStore(previousGameId);
+export const currentGameBuzzwords = deriveFromIdStore(currentGameId, 'words',
+    (arr, ref) => arr.map(obj => {
+        let result = obj;
+        result.verify = () => { result.verified = !result.verified; ref.set(JSON.parse(JSON.stringify(arr))); };
+        return result;
+    })
+);
 
 let gridRef;
 export const myGrid = derived([authStatus, currentGameId], ([auth, currentGame], set) => {
