@@ -12,6 +12,7 @@
     let email;
 	let password;
 	let confirmpassword;
+	let displayname;
 
 	let isRegisterPage = derived(getContext('navaid').active, active => {
 		return active && active.path === '/register';
@@ -30,19 +31,25 @@
 	};
 
 	function register() {
-        if (password === confirmpassword) {
-            auth.createUserWithEmailAndPassword(email, password)
+        if (email && password && password === confirmpassword) {
+			auth.createUserWithEmailAndPassword(email, password)
+				.then(() => auth.currentUser.updateProfile({ displayName: displayname }))
+				.then(() => auth.currentUser.getIdToken(true))
                 .then(success)
-                .catch(error => failure(error, 'Registration failed'));
+				.catch(error => failure(error, 'Registration failed'));
         } else {
-            errorMessage = "passwords don't match";
+            errorMessage = "The passwords don't match";
         }
 	}
 	
 	function login() {
-        auth.signInWithEmailAndPassword(email, password)
-            .then(success)
-			.catch(error => failure(error, 'Authentication failed'));
+        if (email && password) {
+			auth.signInWithEmailAndPassword(email, password)
+				.then(success)
+				.catch(error => failure(error, 'Authentication failed'));
+		} else {
+			errorMessage = "Enter an email and password";
+		}
 	}
 </script>
 
@@ -57,6 +64,7 @@
 		<input type="password" bind:value="{password}" placeholder="Password" />
 		<Route path="/register">
 			<input type="password" bind:value="{confirmpassword}" placeholder="Confirm Password" />
+			<input type="text" bind:value="{displayname}" placeholder="Display name" />
 		</Route>
 
 		{#if errorMessage}

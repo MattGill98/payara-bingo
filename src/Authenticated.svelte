@@ -24,32 +24,26 @@
 	import GameManagement from './routes/GameManagement.svelte';
 	import Buzzwords from './routes/Buzzwords.svelte';
 	import Results from './routes/Results.svelte';
-	import UserInfo from './routes/UserInfo.svelte';
 	import Page404 from './routes/404.svelte';
 </script>
 
-{#if $authStatus.profileConfigured}
-	<div id="tabs">
-		<Link href="/">Game</Link>
-		<Link href="/buzzwords">Buzzwords</Link>
-		<Link href="/results">Results</Link>
-		<Link href="#logout" onclick="{logout}">Logout</Link>
-	</div>
-
-	<div id="content">
-		{#if $authStatus.isAdmin}
-			<Route path="/" component="{GameManagement}" />
-		{:else}
-			<Route path="/" component="{Game}" />
-		{/if}
-		<Route path="/buzzwords" component="{Buzzwords}" />
-		<Route path="/results" component="{Results}" />
-		<Route component="{Page404}" />
-	</div>
-{:else}
+<div id="tabs">
+	<Link href="/">Game</Link>
+	<Link href="/buzzwords">Buzzwords</Link>
+	<Link href="/results">Results</Link>
 	<Link href="#logout" onclick="{logout}">Logout</Link>
-	<Route component="{UserInfo}" />
-{/if}
+</div>
+
+<div id="content">
+	{#if $authStatus.isAdmin}
+		<Route path="/" component="{GameManagement}" />
+	{:else}
+		<Route path="/" component="{Game}" />
+	{/if}
+	<Route path="/buzzwords" component="{Buzzwords}" />
+	<Route path="/results" component="{Results}" />
+	<Route component="{Page404}" />
+</div>
 
 <svelte:head>
 	<style>
