@@ -17,28 +17,32 @@
 		return active && active.path === '/register';
 	});
 
+	let errorMessage;
+
+	let success = () => {
+		errorMessage = undefined;
+		navigate('/', true);
+	};
+
+	let failure = (error, message) => {
+		console.error('Authentication error: ' + error);
+		errorMessage = message;
+	};
+
 	function register() {
         if (password === confirmpassword) {
             auth.createUserWithEmailAndPassword(email, password)
-                .then(userToken => {
-                    navigate('/', true);
-                })
-                .catch(error => {
-                    console.error('Error creating user: ' + error);
-                });
+                .then(success)
+                .catch(error => failure(error, 'Registration failed'));
         } else {
-            throw new Error("passwords don't match");
+            errorMessage = "passwords don't match";
         }
 	}
 	
 	function login() {
         auth.signInWithEmailAndPassword(email, password)
-            .then(userToken => {
-                navigate('/', true);
-            })
-            .catch(error => {
-                console.error('Error authenticating: ' + error);
-            });
+            .then(success)
+			.catch(error => failure(error, 'Authentication failed'));
 	}
 </script>
 
@@ -54,6 +58,11 @@
 		<Route path="/register">
 			<input type="password" bind:value="{confirmpassword}" placeholder="Confirm Password" />
 		</Route>
+
+		{#if errorMessage}
+			<div id="error"><span>{errorMessage}</span></div>
+		{/if}
+
 		<input type="submit" value="{$isRegisterPage? 'Register' : 'Login'}" />
 	</form>
 </div>
