@@ -42,9 +42,19 @@ button[type="submit"], input[type="submit"] {
 
 	font-weight: bold;
 
-	background-color: #F0981B;
+	background-color: rgb(240, 152, 27);
 	border: 1px solid #86979C;
 	border-radius: 3px;
+}
+
+button[type="submit"]:hover, input[type="submit"]:hover,
+button[type="submit"]:active, input[type="submit"]:active,
+button[type="submit"]:focus, input[type="submit"]:focus {
+	background-color: rgba(240, 152, 27, 0.9);
+}
+
+button[type="submit"]:focus, input[type="submit"]:focus {
+	box-shadow: 0 0 0 4px rgb(0, 143, 203);
 }
 
 #error {
