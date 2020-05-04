@@ -11,14 +11,11 @@
 {/if}
 
 <h1>Selected Buzzwords</h1>
-<div>
-{#each $selectedBuzzwords as item}
-    <p on:click="{item.verify}">
-        {#if item.verified}
-            <strong>{item.text}</strong>
-        {:else}
-            {item.text}
-        {/if}
-    </p>
-{/each}
-</div>
+
+<ul>
+    {#each $selectedBuzzwords as item}
+        <li class="selectable" on:click="{item.verify}" class:selected="{item.verified}">
+            <span>{item.text}</span>
+        </li>
+    {/each}
+</ul>

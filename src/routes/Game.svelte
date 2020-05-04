@@ -1,24 +1,52 @@
 <script>
     import { myGrid, submitGrid } from '../config/firebase';
+
+    let victory = false;
+
+    let errorMessage = undefined;
+    function submit() {
+        submitGrid()
+            .then(() => {
+                errorMessage = undefined;
+                victory = true;
+            })
+            .catch(error => {
+                console.error('Invalid grid: ' + error);
+                errorMessage = 'The grid was incorrect';
+            })
+    }
 </script>
 
-<div id="grid">
-    {#if !$myGrid}
-        <p>There is no active game.</p>
-    {:else}
-        {#each $myGrid as item}
-            <div class="square selectable" class:selected="{item.selected}" on:click="{item.select}">
-                <div>
-                    <span>{item.text}</span>
-                </div>
-            </div>
-        {/each}
+{#if victory}
+    <p>Congratulations! See the results screen for the game results.</p>
+{:else}
+    {#if errorMessage}
+        <div id="error"><span>{errorMessage}</span></div>
     {/if}
-</div>
 
-<button type="submit" on:click="{submitGrid}">Submit</button>
+    <div id="grid">
+        {#if !$myGrid}
+            <p>There is no active game.</p>
+        {:else}
+            {#each $myGrid as item}
+                <div class="square selectable" class:selected="{item.selected}" on:click="{item.select}">
+                    <div>
+                        <span>{item.text}</span>
+                    </div>
+                </div>
+            {/each}
+        {/if}
+    </div>
+
+    <button type="submit" on:click="{submit}">Submit</button>
+{/if}
 
 <style>
+    #error {
+        position: absolute;
+        width: calc(100% - 32px);
+    }
+
     #grid {
         margin-top: 115px;
         min-width: 200px;

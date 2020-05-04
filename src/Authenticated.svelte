@@ -61,6 +61,7 @@
 
 <style>
     #content {
+		position: relative;
 		padding: 16px 16px 0;
 		margin: auto;
 		height: 100%;
