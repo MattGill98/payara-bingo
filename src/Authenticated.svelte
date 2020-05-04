@@ -20,7 +20,7 @@
 	import Link from './components/Link.svelte';
 	import { navigate } from 'svelte-navaid';
 
-	import Grid from './routes/Grid.svelte';
+	import Game from './routes/Game.svelte';
 	import GameManagement from './routes/GameManagement.svelte';
 	import Buzzwords from './routes/Buzzwords.svelte';
 	import Results from './routes/Results.svelte';
@@ -30,11 +30,7 @@
 
 {#if $authStatus.profileConfigured}
 	<div id="tabs">
-		{#if $authStatus.isAdmin}
-			<Link href="/">Game</Link>
-		{:else}
-			<Link href="/">Grid</Link>
-		{/if}
+		<Link href="/">Game</Link>
 		<Link href="/buzzwords">Buzzwords</Link>
 		<Link href="/results">Results</Link>
 		<Link href="#logout" onclick="{logout}">Logout</Link>
@@ -44,7 +40,7 @@
 		{#if $authStatus.isAdmin}
 			<Route path="/" component="{GameManagement}" />
 		{:else}
-			<Route path="/" component="{Grid}" />
+			<Route path="/" component="{Game}" />
 		{/if}
 		<Route path="/buzzwords" component="{Buzzwords}" />
 		<Route path="/results" component="{Results}" />
