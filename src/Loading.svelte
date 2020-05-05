@@ -14,7 +14,7 @@
 	#content {
 		top: 20%;
 		margin: auto;
-		width: fit-content;
+		width: max-content;
 		position: relative;
     }
 
