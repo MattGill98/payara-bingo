@@ -111,6 +111,7 @@
 		flex-flow: column nowrap;
 		padding: 7px;
 		border-radius: 3px;
+		width: 250px;
 	}
 
 	form > * {
