@@ -31,25 +31,32 @@
 	};
 
 	function register() {
-        if (email && password && password === confirmpassword) {
-			auth.createUserWithEmailAndPassword(email, password)
-				.then(() => auth.currentUser.updateProfile({ displayName: displayname }))
-				.then(() => auth.currentUser.getIdToken(true))
-                .then(success)
-				.catch(error => failure(error, 'Registration failed'));
-        } else {
-            errorMessage = "The passwords don't match";
-        }
+		if (!email || !password) {
+			return errorMessage = 'Enter an email and password';
+		}
+		if (!displayname) {
+			return errorMessage = 'Enter a display name';
+		}
+		if (!displayname.match(/^(A-Za-z )+$/)) {
+			return errorMessage = 'Display name must not contain numbers or symbols';
+		}
+		if (password !== confirmpassword) {
+			return errorMessage = "The passwords don't match";
+		}
+		auth.createUserWithEmailAndPassword(email, password)
+			.then(() => auth.currentUser.updateProfile({ displayName: displayname }))
+			.then(() => auth.currentUser.getIdToken(true))
+			.then(success)
+			.catch(error => failure(error, 'Registration failed'));
 	}
 	
 	function login() {
-        if (email && password) {
-			auth.signInWithEmailAndPassword(email, password)
-				.then(success)
-				.catch(error => failure(error, 'Authentication failed'));
-		} else {
-			errorMessage = "Enter an email and password";
+		if (!email || !password) {
+			return errorMessage = 'Enter an email and password';
 		}
+		auth.signInWithEmailAndPassword(email, password)
+			.then(success)
+			.catch(error => failure(error, 'Authentication failed'));
 	}
 </script>
 
