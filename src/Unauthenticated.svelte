@@ -37,7 +37,7 @@
 		if (!displayname) {
 			return errorMessage = 'Enter a display name';
 		}
-		if (!displayname.match(/^(A-Za-z )+$/)) {
+		if (!displayname.match(/^([A-Za-z ])+$/)) {
 			return errorMessage = 'Display name must not contain numbers or symbols';
 		}
 		if (password !== confirmpassword) {
