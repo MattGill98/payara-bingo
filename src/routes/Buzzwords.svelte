@@ -17,6 +17,9 @@
     {#each $buzzwords as item}
         {#if $authStatus.isAdmin}
             <li class="selectable" on:click="{item.select}" class:selected="{item.selected}">
+                {#if item.author}
+                    <span>[{item.author}]</span>
+                {/if}
                 <span>{item.text}</span>
                 <button type="button" on:click="{item.remove}"><span>Remove</span></button>
             </li>

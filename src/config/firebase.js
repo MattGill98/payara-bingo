@@ -68,7 +68,8 @@ export const selectedBuzzwords = derived(buzzwords, list => list.filter(item => 
 export function addBuzzword(buzzword) {
     if (buzzword) {
         remoteBuzzwords.push({
-            text: buzzword
+            text: buzzword,
+            author: auth.currentUser.displayName
         });
     }
 }
