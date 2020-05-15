@@ -69,7 +69,7 @@ export function addBuzzword(buzzword) {
     if (buzzword) {
         remoteBuzzwords.push({
             text: buzzword,
-            author: auth.currentUser.displayName
+            author: `${auth.currentUser.email} <${auth.currentUser.displayName}>`
         });
     }
 }
