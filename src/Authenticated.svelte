@@ -28,10 +28,12 @@
 </script>
 
 <div id="tabs">
-	<Link href="/">Game</Link>
-	<Link href="/buzzwords">Buzzwords</Link>
-	<Link href="/results">Results</Link>
-	<Link href="#logout" onclick="{logout}">Logout</Link>
+	<div id="tabcontent">
+		<Link href="/">Game</Link>
+		<Link href="/buzzwords">Buzzwords</Link>
+		<Link href="/results">Results</Link>
+		<Link href="#logout" onclick="{logout}">Logout</Link>
+	</div>
 </div>
 
 <div id="content">
@@ -69,9 +71,16 @@
 		background-color: #002C3E;
 
 		display: flex;
-		flex-flow: row nowrap;
-		justify-content: space-around;
+		justify-content: center;
 		height: 10%;
 		align-items: flex-end;
+	}
+
+	#tabcontent {
+		display: flex;
+		justify-content: space-around;
+		flex-flow: row nowrap;
+		max-width: 500px;
+		width: 100%;
 	}
 </style>
